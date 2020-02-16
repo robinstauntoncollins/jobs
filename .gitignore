@@ -1,0 +1,8 @@
+# VSCode
+.vscode
+
+# VENV
+venv
+
+# pycache
+__pycache__
