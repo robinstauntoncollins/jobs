@@ -2,7 +2,17 @@ from flask import Flask, jsonify, abort, make_response, request, url_for
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal
 
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+from config import Config
+
 app = Flask(__name__, static_url_path="")
+app.config.from_object(Config)
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 api = Api(app)
 
 auth = HTTPBasicAuth()
@@ -16,7 +26,6 @@ def get_password(username):
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
-
 
 
 jobs = [
