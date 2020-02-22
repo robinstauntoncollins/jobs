@@ -3,7 +3,7 @@ from app import db
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(64), index=True, unique=True),
+    title = db.Column(db.String(64), index=True, unique=True)
     description = db.Column(db.Text, index=True, nullable=True)
     location = db.Column(db.String(64), index=True)
     done = db.Column(db.Boolean, index=True, default=False)
@@ -12,3 +12,9 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"<Job> {self.title}"
+
+
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, unique=True)
+    jobs = db.relationship('Job', backref='job', lazy=True)
