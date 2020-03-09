@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, abort, make_response, request, url_for
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal
@@ -15,6 +17,10 @@ migrate = Migrate(app, db)
 
 import models
 
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'Job': models.Job, 'Location': models.Location, 'User': models.User}
+
 api = Api(app)
 
 auth = HTTPBasicAuth()
@@ -30,26 +36,26 @@ def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
 
 
-jobs = [
-    {
-        'id': 1,
-        'title': 'Clean Bathroom Mirror',
-        'description': 'Use glass cleaner to clean the bathroom mirror.',
-        'location': 'bathroom',
-        'done': False,
-        'frequency': 'weekly',
-        'preferred': 'Robin',
-    },
-    {
-        'id': 2,
-        'title': 'Wash kitchen floor',
-        'description': 'Mop kitchen and dining room floor as far as the fridge',
-        'location': 'kitchen',
-        'done': False,
-        'frequency': 'monthly',
-        'preferred': 'Karolina',        
-    }
-]
+# jobs = [
+#     {
+#         'id': 1,
+#         'title': 'Clean Bathroom Mirror',
+#         'description': 'Use glass cleaner to clean the bathroom mirror.',
+#         'location': 'bathroom',
+#         'last_done': datetime(2020, 3, 7, 10, 22, 8),
+#         'frequency': 'weekly',
+#         'preferred': 'Robin',
+#     },
+#     {
+#         'id': 2,
+#         'title': 'Wash kitchen floor',
+#         'description': 'Mop kitchen and dining room floor as far as the fridge',
+#         'location': 'kitchen',
+#         'last_done': datetime(2020, 3, 7, 10, 22, 8),
+#         'frequency': 'monthly',
+#         'preferred': 'Karolina',        
+#     }
+# ]
 
 job_fields = {
     'title': fields.String,
@@ -57,8 +63,8 @@ job_fields = {
     'frequency': fields.String,
     'preferred': fields.String,
     'description': fields.String,
-    'done': fields.Boolean,
-    'uri': fields.Url('job')
+    'last_done': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('job'),
 }
 
 class JobListAPI(Resource):
@@ -86,7 +92,7 @@ class JobListAPI(Resource):
             'location': args['location'],
             'frequency': args['frequency'],
             'preferred': args['preferred'],
-            'done': False
+            'last_done': datetime.now(),
         }
         jobs.append(job)
         return {'job': marshal(job, job_fields)}, 201
@@ -102,7 +108,7 @@ class JobAPI(Resource):
         self.reqparse.add_argument('location', type=str, location="json")
         self.reqparse.add_argument('frequency', type=str, default="weekly", location="json")
         self.reqparse.add_argument('preferred', type=str, default="", location="json")
-        self.reqparse.add_argument('done', type=bool, default=False, location="json")
+        self.reqparse.add_argument('last_done', type=bool, default=datetime.now().isoformat(), location="json")
         super(JobAPI, self).__init__()
 
     def get(self, id):
