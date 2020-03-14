@@ -1,9 +1,8 @@
 from app import db
 from datetime import datetime
-import phonenumbers
-from sqlalchemy_utils import PhoneNumber
 
 class Job(db.Model): # Like Post
+    __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64), index=True, unique=True)
     description = db.Column(db.Text, index=True, nullable=True)
@@ -17,27 +16,21 @@ class Job(db.Model): # Like Post
 
 
 class Location(db.Model): # Like User
+    __tablename__ = 'locations'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     jobs = db.relationship('Job', backref='location', lazy=True)
 
     def __repr__(self):
-        return f"<Location> '{self.name}'' has jobs: {[job.title for job in self.jobs]}"
+        return f"<Location> '{self.name}' has jobs: {[job.title for job in self.jobs]}"
 
 
 class User(db.Model): # Like User
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     jobs = db.relationship('Job', backref='worker', lazy='dynamic')
-    _phone_number = db.Column(db.Unicode(255))
-    phone_country_code = db.Column(db.Unicode(8))
-
-    phone_number = db.composite(
-        PhoneNumber,
-        _phone_number,
-        phone_country_code
-    )
     def __repr__(self):
         return f"<User> {self.username} {self.email}"

@@ -36,34 +36,13 @@ def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
 
 
-# jobs = [
-#     {
-#         'id': 1,
-#         'title': 'Clean Bathroom Mirror',
-#         'description': 'Use glass cleaner to clean the bathroom mirror.',
-#         'location': 'bathroom',
-#         'last_done': datetime(2020, 3, 7, 10, 22, 8),
-#         'frequency': 'weekly',
-#         'preferred': 'Robin',
-#     },
-#     {
-#         'id': 2,
-#         'title': 'Wash kitchen floor',
-#         'description': 'Mop kitchen and dining room floor as far as the fridge',
-#         'location': 'kitchen',
-#         'last_done': datetime(2020, 3, 7, 10, 22, 8),
-#         'frequency': 'monthly',
-#         'preferred': 'Karolina',        
-#     }
-# ]
-
 job_fields = {
     'title': fields.String,
-    'location': fields.String,
-    'frequency': fields.String,
-    'preferred': fields.String,
     'description': fields.String,
     'last_done': fields.DateTime(dt_format='iso8601'),
+    'frequency': fields.String,
+    'worker': fields.String,
+    'location': fields.String,
     'uri': fields.Url('job'),
 }
 
@@ -77,25 +56,31 @@ class JobListAPI(Resource):
         self.reqparse.add_argument('description', type=str, default="", location="json")
         self.reqparse.add_argument('location', type=str, required=True, location="json", help="No location provided")
         self.reqparse.add_argument('frequency', type=str, default="weekly", location="json")
-        self.reqparse.add_argument('preferred', type=str, default="", location="json")
+        self.reqparse.add_argument('worker', type=str, default="", location="json")
         super(JobListAPI, self).__init__()
 
     def get(self):
+        jobs = models.Job.query.all()
         return {'jobs': [marshal(job, job_fields) for job in jobs]}
 
     def post(self):
         args = self.reqparse.parse_args()
-        job = {
-            'id': jobs[-1]['id'] + 1 if len(jobs) > 0 else 1,
-            'title': args['title'],
-            'description': args['description'],
-            'location': args['location'],
-            'frequency': args['frequency'],
-            'preferred': args['preferred'],
-            'last_done': datetime.now(),
-        }
-        jobs.append(job)
-        return {'job': marshal(job, job_fields)}, 201
+        jobs = models.Job.query.all()
+        if not args.get('last_done'):
+            last_done = datetime.now()
+        else:
+            last_done = args['last_done']
+        j = models.Job(
+            title=args['title'],
+            description=args['description'],
+            location=models.Location.query.filter_by(name=args['location']).first(),
+            frequency=args['frequency'],
+            worker=models.User.query.filter_by(username=args['worker']).first(),
+            last_done=last_done
+        )
+        db.session.add(j)
+        db.session.commit()
+        return {'job': marshal(j, job_fields)}, 201
 
 class JobAPI(Resource):
 
@@ -107,32 +92,26 @@ class JobAPI(Resource):
         self.reqparse.add_argument('description', type=str, default="", location="json")
         self.reqparse.add_argument('location', type=str, location="json")
         self.reqparse.add_argument('frequency', type=str, default="weekly", location="json")
-        self.reqparse.add_argument('preferred', type=str, default="", location="json")
+        self.reqparse.add_argument('worker', type=str, default="", location="json")
         self.reqparse.add_argument('last_done', type=bool, default=datetime.now().isoformat(), location="json")
         super(JobAPI, self).__init__()
 
     def get(self, id):
-        job = [job for job in jobs if job['id'] == id]
-        if len(job) == 0:
-            abort(404)
-        return {'job': marshal(job[0], job_fields)}
+        job = models.Job.query.get_or_404(id)
+        return {'job': marshal(job, job_fields)},
 
     def put(self, id):
-        job = [job for job in jobs if job['id'] == id]
-        if len(job) == 0:
-            abort(404)
-        job = job[0]
+        job = models.Job.query.get_or_404(id)
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
-                job[k] = v
+                pass
         return {'job': marshal(job, job_fields)}
 
     def delete(self, id):
-        job = [job for job in jobs if job['id'] == id]
-        if len(job) == 0:
-            abort(404)
-        jobs.remove(job[0])
+        job = models.Job.query.get_or_404(id)
+        db.session.delete(job)
+        db.session.commit()
         return {'result': True}
 
 api.add_resource(JobListAPI, '/jobs/api/v1.0/jobs', endpoint='jobs')
