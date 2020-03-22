@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 
-from flask import Flask, jsonify, abort, make_response, request, url_for
+from flask import Flask, jsonify, abort, make_response, request, url_for, abort
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal
 
@@ -17,6 +17,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 import models
+from errors import InvalidUsage
 
 @app.shell_context_processor
 def make_shell_context():
@@ -40,6 +41,12 @@ def unauthorized():
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not Found'}), 404)
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 job_fields = {
@@ -75,7 +82,7 @@ class JobListAPI(Resource):
         job = models.Job.query.filter_by(title=args['title']).first()
         if job is not None:
             app.logger.info(f"Found job with name {args['title']}: {job}")
-            raise ValueError(f"Job with this title already exists")
+            raise InvalidUsage(f"Job with this title already exists")
         job = models.Job().import_data(args)
         db.session.add(job)
         db.session.commit()
