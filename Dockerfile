@@ -7,7 +7,7 @@ WORKDIR /home/jobsapi
 COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN venv/bin/pip install -r requirements.txt
-RUN vevn/bin/pip install gunicorn
+RUN venv/bin/pip install gunicorn
 
 COPY migrations migrations
 COPY app.py errors.py models.py config.py boot.sh ./
