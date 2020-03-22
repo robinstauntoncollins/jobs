@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 from flask import Flask, jsonify, abort, make_response, request, url_for
 from flask_httpauth import HTTPBasicAuth
@@ -36,6 +37,10 @@ def get_password(username):
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not Found'}), 404)
+
 
 job_fields = {
     'title': fields.String,
@@ -66,8 +71,10 @@ class JobListAPI(Resource):
 
     def post(self):
         args = self.reqparse.parse_args()
-        job = models.Job.query.filter_by(title=args['title'])
+        app.logger.info(f"Received args: {args}")
+        job = models.Job.query.filter_by(title=args['title']).first()
         if job is not None:
+            app.logger.info(f"Found job with name {args['title']}: {job}")
             raise ValueError(f"Job with this title already exists")
         job = models.Job().import_data(args)
         db.session.add(job)
