@@ -21,7 +21,6 @@ from errors import InvalidUsage
 
 @app.shell_context_processor
 def make_shell_context():
-    # return {'db': db, 'Job': models.Job, 'Location': models.Location, 'User': models.User}
     return {'db': db, 'Job': models.Job}
 
 api = Api(app)
@@ -54,8 +53,6 @@ job_fields = {
     'description': fields.String,
     'last_done': fields.DateTime(dt_format='iso8601'),
     'frequency': fields.String,
-    # 'worker': fields.String,
-    # 'location': fields.String,
     'uri': fields.Url('job'),
 }
 
@@ -67,9 +64,7 @@ class JobListAPI(Resource):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('title', type=str, required=True, help="No job title provided", location="json")
         self.reqparse.add_argument('description', type=str, default="", location="json")
-        # self.reqparse.add_argument('location', type=str, required=True, location="json", help="No location provided")
         self.reqparse.add_argument('frequency', type=str, default="weekly", location="json")
-        # self.reqparse.add_argument('worker', type=str, default="", location="json")
         super(JobListAPI, self).__init__()
 
     def get(self):
@@ -98,8 +93,6 @@ class JobAPI(Resource):
         self.reqparse.add_argument('description', type=str, default="", location="json")
         self.reqparse.add_argument('frequency', type=str, default="weekly", location="json")
         self.reqparse.add_argument('last_done', type=bool, default=datetime.now().isoformat(), location="json")
-        # self.reqparse.add_argument('location', type=str, location="json")
-        # self.reqparse.add_argument('worker', type=str, default="", location="json")
         super(JobAPI, self).__init__()
 
     def get(self, id):
