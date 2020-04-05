@@ -1,4 +1,4 @@
-from flask import Blueprint, g # url_for
+from flask import Blueprint, g 
 from flask_restful import Api
 
 
