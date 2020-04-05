@@ -6,3 +6,4 @@ class Config(object):
     print(f"Current dir: {os.path.dirname(__file__)}")
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    URL_PREFIX = '/api'

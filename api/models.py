@@ -8,7 +8,7 @@ class Job(db.Model): # Like Post
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64), index=True, unique=True)
     description = db.Column(db.Text, index=True, nullable=True)
-    last_done = db.Column(db.DateTime, index=True, default=datetime.now())
+    last_done = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     frequency = db.Column(db.String(64), index=True, default="monthly")
     # user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     # location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
@@ -21,9 +21,20 @@ class Job(db.Model): # Like Post
             self.title = data['title']
             self.description = data['description']
             self.frequency = data['frequency']
+            last_done = data['last_done']
         except KeyError as e:
             raise ValueError('Invalid class: missing ' + e.args[0])
+        if type(last_done) == str:
+            self.last_done = datetime.strptime(last_done, "%Y-%m-%dT%H:%M:%S.%f")
         return self
+
+    def export_data(self):
+        return {
+            'title': self.title,
+            'description': self.description,
+            'frequency': self.frequency,
+            'last_done': self.last_done
+        }
 
 
 

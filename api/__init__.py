@@ -8,6 +8,8 @@ from .models import db
 from .errors import InvalidUsage
 from .auth import auth
 
+from api.v1 import api_v1_bp, API_VERSION_V1
+
 def create_app(config_module=None):
     app = Flask(__name__, static_url_path="")
     app.config.from_object(config_module or
@@ -17,18 +19,17 @@ def create_app(config_module=None):
     db.init_app(app)
     migrate = Migrate(app, db)
 
-    
-    @app.shell_context_processor
-    def make_shell_context():
-        return {'db': db, 'Job': models.Job}
 
-    from api.v1 import api_bp as api_blueprint
-    app.register_blueprint(api_blueprint)    
+    app.register_blueprint(
+        api_v1_bp,
+        url_prefix=f"{app.config['URL_PREFIX']}/v{API_VERSION_V1}"
+    )    
 
+    @auth.login_required
     @app.route('/')
     def index():
-        # from api.v1 import get_catelog as v1_catelog
-        return {'versions': {"v1": "Placeholder"}}
+        from api.v1 import get_catelog as v1_catelog
+        return {'versions': {"v1": v1_catelog()}}
 
     @app.errorhandler(404)
     def not_found(error):

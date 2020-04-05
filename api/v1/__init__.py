@@ -2,13 +2,19 @@ from flask import Blueprint, g # url_for
 from flask_restful import Api
 
 
-api_bp = Blueprint('api', __name__)
-api = Api(api_bp)
 
+API_VERSION_V1 = 1
 
-# def get_catelog():
-#     return {
-#         'jobs_url': Api.url_for(, _external=True)
-#     }
+api_v1_bp = Blueprint('api', __name__)
+api = Api(api_v1_bp)
+
 
 from . import jobs
+api.add_resource(jobs.JobListAPI, '/jobs', '/jobs/', endpoint='jobs')
+api.add_resource(jobs.JobAPI, '/jobs/<int:id>', '/jobs/<int:id>/', endpoint='job')
+
+
+def get_catelog():
+    return {
+        'jobs_url': api.url_for(jobs.JobListAPI, _external=True)
+    }
