@@ -9,8 +9,9 @@ RUN python -m venv venv
 RUN venv/bin/pip install -r requirements.txt
 RUN venv/bin/pip install gunicorn
 
+COPY api api
 COPY migrations migrations
-COPY app.db app.py errors.py models.py config.py boot.sh ./
+COPY jobsapi.py app.db config.py boot.sh ./
 RUN chmod +x boot.sh
 
 ENV FLASK_APP app.py
