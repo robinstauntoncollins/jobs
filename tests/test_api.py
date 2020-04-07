@@ -2,7 +2,7 @@ import os
 import tempfile
 
 import pytest
-import jobsapi
+import jobs_api
 
 @pytest.fixture
 def client():
