@@ -1,5 +1,8 @@
+import os
+import tempfile
+
 import pytest
-from . import api as jobsapi
+import jobsapi
 
 @pytest.fixture
 def client():
@@ -14,5 +17,6 @@ def client():
     os.close(db_fd)
     os.unlink(jobsapi.app.config['SQLALCHEMY_DATABASE_URI'])
 
-class TestAPI():
 
+def test_something(client):
+    print(f"Here is your client: {client}")

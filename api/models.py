@@ -24,8 +24,7 @@ class Job(db.Model): # Like Post
             last_done = data['last_done']
         except KeyError as e:
             raise ValueError('Invalid class: missing ' + e.args[0])
-        if type(last_done) == str:
-            self.last_done = datetime.strptime(last_done, "%Y-%m-%dT%H:%M:%S.%f")
+        self.last_done = datetime.strptime(last_done, "%Y-%m-%dT%H:%M:%S.%f")
         return self
 
     def export_data(self):
