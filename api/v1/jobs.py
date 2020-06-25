@@ -14,7 +14,7 @@ job_fields = {
 
 class JobListAPI(Resource):
 
-    decorators = [auth.login_required]
+    # decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -40,7 +40,7 @@ class JobListAPI(Resource):
 
 class JobAPI(Resource):
 
-    decorators = [auth.login_required]
+    # decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()

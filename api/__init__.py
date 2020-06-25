@@ -25,7 +25,7 @@ def create_app(config_module=None):
         url_prefix=f"{app.config['URL_PREFIX']}/v{API_VERSION_V1}"
     )    
 
-    @auth.login_required
+    # @auth.login_required
     @app.route('/')
     def index():
         from api.v1 import get_catelog as v1_catelog
