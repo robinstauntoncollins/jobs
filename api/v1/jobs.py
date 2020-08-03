@@ -38,6 +38,7 @@ class JobListAPI(Resource):
         models.db.session.commit()
         return {'job': marshal(job, job_fields)}, 201
 
+
 class JobAPI(Resource):
 
     # decorators = [auth.login_required]

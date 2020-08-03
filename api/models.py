@@ -1,14 +1,17 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
+from flask_sqlalchemy import SQLAlchemy
+
+from api.utils import get_utc_now
 
 db = SQLAlchemy()
 
-class Job(db.Model): # Like Post
+class Job(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64), index=True, unique=True)
     description = db.Column(db.Text, index=True, nullable=True)
-    last_done = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    last_done = db.Column(db.DateTime, index=True, default=get_utc_now)
     frequency = db.Column(db.String(64), index=True, default="monthly")
     # user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     # location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
@@ -19,12 +22,16 @@ class Job(db.Model): # Like Post
     def import_data(self, data):
         try:
             self.title = data['title']
-            self.description = data['description']
-            self.frequency = data['frequency']
-            last_done = data['last_done']
         except KeyError as e:
             raise ValueError('Invalid class: missing ' + e.args[0])
-        self.last_done = datetime.strptime(last_done, "%Y-%m-%dT%H:%M:%S.%f")
+        
+        self.description = data.get('description')
+        self.frequency = data.get('frequency')
+        last_done = data.get('last_done')
+        if last_done:
+            self.last_done = datetime.strptime(last_done, "%Y-%m-%dT%H:%M:%S.%f")
+        else:
+            self.last_done = get_utc_now()
         return self
 
     def export_data(self):
